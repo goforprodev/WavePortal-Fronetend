@@ -11,8 +11,45 @@ export default function App() {
   const [waveCount,setCount] = useState(0)
   const [isDisabled,setDisabled] = useState(false)
   const [loadText,setLoadText] = useState("")
-  const contractAddress ="0xe2858a847924Ac71da9BFd97917D2E1dF73b39F9"
+  const [allWaves,setAllWaves]= useState([])
+  const [message,setMessage]= useState("")
+  
+  const contractAddress ="0x63d43a74367C1258F6c8dF7f67Da29e2F74eBcC4"
   const contractABI = abi.abi 
+
+  // get all waves function
+  const getAllWaves = async() => {
+    try {
+      const {ethereum} = window
+
+      if(ethereum){
+        const provider = new ethers.providers.Web3Provider(ethereum)
+        const signer = provider.getSigner()
+        const wavePortalContract = new ethers.Contract(contractAddress,contractABI,signer)
+
+        // get all waves
+        let waves = await wavePortalContract.getAllWaves()
+
+        //cleanup waves
+        
+        let waveCleaned = []
+        waves.forEach(wave => {
+          waveCleaned.push({
+            address:wave.from,
+            timestamp:new Date(wave.timestamp * 1000),
+            message:wave.message
+          })
+        })
+
+        console.log(wavesCleaned)
+        setAllWaves(waveCleaned)
+      }else{
+        console.log("Ethereum object does not exist")
+      }
+    } catch (error) {
+      console.log(error.message)
+    }
+  }
   // check if wallet is connected
   const checkIfWalletIsConnected = async () => {
     try{
@@ -29,6 +66,8 @@ export default function App() {
         const account = accounts[0]
         console.log(accounts)
         setCurrentAcc(account)
+        getAllWaves()
+        
       }else{
         console.log("Auth failed")
       }
@@ -49,7 +88,7 @@ export default function App() {
 
       const accounts = await ethereum.request({method:"eth_requestAccounts"})
       console.log("connected 😊",accounts[0])
-      setCurrentAcc(account[0])
+      setCurrentAcc(accounts[0])
     }catch(err){
       console.log(err.message)
     }
@@ -69,7 +108,7 @@ export default function App() {
         // console.log("Total waves :",count.toNumber())
 
         // Connecting the actual wave
-        const waveTxn = await wavePortalAddress.wave()
+        const waveTxn = await wavePortalAddress.wave("hello world")
         //since we are running a function/transaction here we wait for it to mine
         console.log("Minnig...",waveTxn.hash)
         setLoadText("Mining...")
@@ -84,7 +123,7 @@ export default function App() {
         count = await wavePortalAddress.getTotalWaves()
         console.log("Total waves recieved",count.toNumber())
         setCount(count.toNumber())
-        setDisables(false)
+        setDisabled(false)
   
       }else{
         Alert("Connect to your metamask first!")
@@ -113,9 +152,19 @@ export default function App() {
         <button className="waveButton" disabled={isDisabled} onClick={wave}>
           Wave at Me
         </button>
+        <textarea placeholder="Send me a message..." rows="10" />
         {!currentAcc && <button className="waveButton" onClick={connectWallet}>Connect Wallet</button>}
 
         <h1>Total Wave : {waveCount}</h1>
+
+         {allWaves.map((wave, index) => {
+          return (
+            <div key={index} style={{ backgroundColor: "OldLace", marginTop: "16px", padding: "8px" }}>
+              <div>Address: {wave.address}</div>
+              <div>Time: {wave.timestamp.toString()}</div>
+              <div>Message: {wave.message}</div>
+            </div>)
+        })}
       </div>
     </div>
   );
