@@ -36,7 +36,35 @@
 textarea{
   resize:none;
   outline:none;
-  margin:1em 0;
+  margin:.5em 0;
   padding:1em;
   font-family:inherit;
+  border-color:gray;
+  border-radius: 5px;
+  
+}
+
+.scrollabe__container{
+  height:30vh;
+  overflow-y:scroll;
+}
+
+.aside{
+ display:flex;
+  gap:2em;
+  margin:1em 0;
+}
+.total__waves,.address{
+  padding:.4em;
+  font-size:1em;
+}
+.total__waves{
+  font-size:1.3em
+}
+.address{
+  border:1px solid gray;
+/*   width:100px; */
+/*   overflow:hidden; */
+  border-radius: 5px;
+  
 }

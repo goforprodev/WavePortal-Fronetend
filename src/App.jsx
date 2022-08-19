@@ -29,7 +29,9 @@ export default function App() {
 
         // get all waves
         let waves = await wavePortalContract.getAllWaves()
+        let count = await wavePortalContract.getTotalWaves()
 
+        setCount(count.toNumber())
         //cleanup waves
         
         let waveCleaned = []
@@ -41,7 +43,6 @@ export default function App() {
           })
         })
 
-        console.log(wavesCleaned)
         setAllWaves(waveCleaned)
       }else{
         console.log("Ethereum object does not exist")
@@ -66,6 +67,7 @@ export default function App() {
         const account = accounts[0]
         console.log(accounts)
         setCurrentAcc(account)
+        
         getAllWaves()
         
       }else{
@@ -101,15 +103,22 @@ export default function App() {
         const provider = new ethers.providers.Web3Provider(ethereum)
         const signer = provider.getSigner()
         const wavePortalAddress = new ethers.Contract(contractAddress, contractABI, signer)
-      setDisabled(true)
-      setIsLoading(true)
         let count = await wavePortalAddress.getTotalWaves()
         
         // console.log("Total waves :",count.toNumber())
 
         // Connecting the actual wave
-        const waveTxn = await wavePortalAddress.wave("hello world")
-        //since we are running a function/transaction here we wait for it to mine
+        let waveTxn;
+        if(message !== ""){
+        setDisabled(true)
+        setIsLoading(true)
+        setMessage("")
+         waveTxn = await wavePortalAddress.wave(message)
+        }else{
+          alert("Send A Message 🤗")
+          return;
+        }
+        //since we are running a function/transaction here we wait for git to mine
         console.log("Minnig...",waveTxn.hash)
         setLoadText("Mining...")
 
@@ -124,6 +133,7 @@ export default function App() {
         console.log("Total waves recieved",count.toNumber())
         setCount(count.toNumber())
         setDisabled(false)
+        getAllWaves()
   
       }else{
         Alert("Connect to your metamask first!")
@@ -132,7 +142,7 @@ export default function App() {
       console.log(error.message)
     }
   }
-  
+
   useEffect(() => {
     checkIfWalletIsConnected()
 
@@ -149,15 +159,24 @@ export default function App() {
         I am Promise and I worked on self-driving cars so that's pretty cool right? Connect your Ethereum wallet and wave at me!
         </div>
 
+      <div className="dataContainer" style={{marginTop:"1em"}}>
+        <label for="message">Enter Message *</label>
+        <textarea name="message" placeholder="Send me a message..." rows="5" value={message} onChange={(e) => setMessage(e.target.value)} important />
+      </div>
+
         <button className="waveButton" disabled={isDisabled} onClick={wave}>
           Wave at Me
         </button>
-        <textarea placeholder="Send me a message..." rows="10" />
         {!currentAcc && <button className="waveButton" onClick={connectWallet}>Connect Wallet</button>}
 
-        <h1>Total Wave : {waveCount}</h1>
+        <div className="aside">
+        <div className="total__waves">👋{waveCount}</div>
+        {currentAcc && <div className="address">{currentAcc}</div>}  
+        
+        </div>
 
-         {allWaves.map((wave, index) => {
+        <div className="scrollabe__container">
+           {allWaves.map((wave, index) => {
           return (
             <div key={index} style={{ backgroundColor: "OldLace", marginTop: "16px", padding: "8px" }}>
               <div>Address: {wave.address}</div>
@@ -165,6 +184,8 @@ export default function App() {
               <div>Message: {wave.message}</div>
             </div>)
         })}
+        </div>
+        
       </div>
     </div>
   );
